@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+const mysql = require('mysql');
 
 const bodyparser = require('body-parser');
 const path = require('path');
@@ -15,13 +16,26 @@ app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({extended:false}));
 app.use(express.static(path.join(__dirname,'public')));
 
-
-app.get('/',function(req,res){
-
-    res.render('index',{lista:[{'telefone':'99999999'},{'telefone':'88888888'}],'nome':'Sandro'});
+// Conexão com o Banco
+const db = mysql.createConnection({
+    host:'localhost',
+    user:'root',
+    password:'',
+    database:'node'
 });
 
+db.connect(function(err){
+    if(err)
+    {
+        console.log("Não foi possível conectar no banco!")
+    }
+})
+app.get('/',function(req,res){
+    let query = db.query("SELECT * FROM clientes",function(err,results){
+    res.render('index',{lista:results});
+    });
+});
 
-app.get('/sobre',function(req,res){
-    res.render('sobre',{});
+app.get('/registrar',function(req,res){
+    res.render('cadastro',{});
 })
